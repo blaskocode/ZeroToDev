@@ -61,13 +61,37 @@ jobs:
         working-directory: ./infra/terraform
         run: terraform init
       
+      - name: Verify Secrets
+        run: |
+          if [ -z "$DB_PASSWORD" ]; then
+            echo "::error::DB_PASSWORD secret is empty or not set"
+            exit 1
+          fi
+          echo "✓ DB_PASSWORD secret is set"
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      
+      - name: Terraform Plan
+        working-directory: ./infra/terraform
+        env:
+          TF_VAR_frontend_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-frontend:${{ github.sha }}
+          TF_VAR_api_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-api:${{ github.sha }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        run: terraform plan -no-color
+      
       - name: Terraform Apply
         working-directory: ./infra/terraform
         env:
           TF_VAR_frontend_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-frontend:${{ github.sha }}
           TF_VAR_api_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-api:${{ github.sha }}
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve -no-color 2>&1 | tee terraform-apply.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "::error::Terraform apply failed"
+            cat terraform-apply.log
+            exit 1
+          fi
       
       - name: Get ALB URL
         working-directory: ./infra/terraform
