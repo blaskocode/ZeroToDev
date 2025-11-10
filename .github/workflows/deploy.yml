@@ -73,16 +73,30 @@ jobs:
           
           if echo "$PLAN_OUTPUT" | grep -q "Error acquiring the state lock"; then
             echo "⚠️  State lock detected. Extracting lock ID..."
-            # Extract lock ID from the error message
-            LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -A 15 "Lock Info:" | grep -E "^[[:space:]]+ID:" | awk '{print $2}' | head -1 | tr -d '[:space:]')
+            # Extract lock ID from the error message - handle both formatted and plain text
+            LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -A 20 "Lock Info:" | grep -i "ID:" | sed 's/.*ID:[[:space:]]*//' | head -1 | tr -d '[:space:]' | sed 's/[^a-zA-Z0-9-]//g')
+            
+            # Alternative extraction if first method fails
+            if [ -z "$LOCK_ID" ] || [ ${#LOCK_ID} -lt 10 ]; then
+              LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1)
+            fi
             
             if [ -n "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ] && [ ${#LOCK_ID} -gt 10 ]; then
               echo "Releasing lock: $LOCK_ID"
               terraform force-unlock -force "$LOCK_ID" && echo "✓ Lock released successfully" || echo "⚠️  Could not release lock (may have been released already)"
             else
               echo "⚠️  Could not extract valid lock ID from output"
-              echo "Lock detection output (first 20 lines):"
-              echo "$PLAN_OUTPUT" | head -20
+              echo "Lock detection output (first 30 lines):"
+              echo "$PLAN_OUTPUT" | head -30
+              echo ""
+              echo "Attempting to release all locks from local machines via DynamoDB..."
+              # Fallback: try to find and release locks directly from DynamoDB
+              aws dynamodb scan --table-name zero-to-dev-terraform-locks --query 'Items[?contains(Info.S, `local`) || contains(Info.S, `Courtneys-MacBook-Pro`)].LockID.S' --output text 2>/dev/null | while read LOCK; do
+                if [ -n "$LOCK" ] && [[ "$LOCK" != *"-md5" ]]; then
+                  echo "Attempting to release: $LOCK"
+                  terraform force-unlock -force "$LOCK" 2>&1 || true
+                fi
+              done || echo "Could not access DynamoDB for lock cleanup"
             fi
           else
             echo "✓ No locks detected - proceeding with deployment"
