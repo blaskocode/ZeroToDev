@@ -3,6 +3,8 @@
 > **Clone → Run → Code** in under 10 minutes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deploy to AWS ECS](https://github.com/YOUR_USERNAME/ZeroToDev/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/ZeroToDev/actions/workflows/deploy.yml)
+[![PR Checks](https://github.com/YOUR_USERNAME/ZeroToDev/actions/workflows/pr-check.yml/badge.svg)](https://github.com/YOUR_USERNAME/ZeroToDev/actions/workflows/pr-check.yml)
 
 ## Overview
 
@@ -22,6 +24,7 @@ Clone the repository, run a single command, and start coding immediately.
 - 🐳 **Docker-Based** - Consistent environments across all machines
 - 🔄 **Hot Reload** - Real-time code updates for frontend and backend
 - 🏥 **Health Monitoring** - Built-in service health dashboard
+- 🎨 **Beautiful CLI** - Colorized output with progress indicators and helpful error messages
 - ☁️ **Cloud Ready** - One-command deployment to AWS
 - 📚 **Comprehensive Docs** - Clear guides for all scenarios
 
@@ -71,7 +74,7 @@ make dev
 
 ### 4. Access Services
 
-- **Frontend**: http://localhost:3000
+- **Frontend**: http://localhost:5173
 - **API**: http://localhost:4000
 - **API Health Check**: http://localhost:4000/health
 

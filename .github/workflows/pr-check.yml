@@ -1,0 +1,97 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install API dependencies
+        working-directory: ./api
+        run: npm ci
+      
+      - name: Lint API
+        working-directory: ./api
+        run: npm run lint || echo "Linting not configured yet"
+      
+      - name: Build API
+        working-directory: ./api
+        run: npm run build
+      
+      - name: Install Frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint
+      
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+      
+      - name: Start Docker Compose
+        run: docker compose up -d
+      
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to be ready..."
+          sleep 30
+          
+          # Wait for API to be healthy (max 60 seconds)
+          max_attempts=12
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://localhost:4000/health > /dev/null 2>&1; then
+              echo "API is healthy!"
+              break
+            fi
+            echo "Attempt $((attempt+1))/$max_attempts: API not ready yet..."
+            sleep 5
+            attempt=$((attempt+1))
+          done
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "API health check failed after $max_attempts attempts"
+            docker compose logs api
+            exit 1
+          fi
+      
+      - name: Check health endpoints
+        run: |
+          echo "Testing API health endpoint..."
+          curl -f http://localhost:4000/health || exit 1
+          
+          echo "Testing database health endpoint..."
+          curl -f http://localhost:4000/health/db || exit 1
+          
+          echo "Testing cache health endpoint..."
+          curl -f http://localhost:4000/health/cache || exit 1
+          
+          echo "Testing comprehensive health endpoint..."
+          curl -f http://localhost:4000/health/all || exit 1
+          
+          echo "Testing frontend..."
+          curl -f http://localhost:5173 || exit 1
+          
+          echo "All health checks passed!"
+      
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+      
+      - name: Docker Compose Down
+        if: always()
+        run: docker compose down -v
+

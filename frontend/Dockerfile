@@ -1,13 +1,56 @@
-# Placeholder Dockerfile for Frontend
-# Full implementation coming in PR #3
-
-FROM node:20-alpine
+# Multi-stage build for production-optimized frontend
+FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Create a minimal placeholder server
-RUN echo 'console.log("Frontend placeholder - waiting for PR #3 implementation");' > index.js
-RUN echo 'setTimeout(() => {}, 999999999);' >> index.js
+# Copy package files
+COPY package*.json ./
 
-CMD ["node", "index.js"]
+# ============================================
+# Development stage
+# ============================================
+FROM base AS development
+
+# Install all dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Start development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# ============================================
+# Build stage
+# ============================================
+FROM base AS build
+
+# Install all dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# ============================================
+# Production stage
+# ============================================
+FROM nginx:alpine AS production
+
+# Copy built assets from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
 

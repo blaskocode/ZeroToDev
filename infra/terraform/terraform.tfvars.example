@@ -1,0 +1,54 @@
+# Zero-to-Running Developer Environment
+# Terraform Variables Configuration
+
+# ============================================
+# AWS Configuration
+# ============================================
+aws_region   = "us-east-1"
+environment  = "dev"
+project_name = "zero-to-dev"
+
+# ============================================
+# Network Configuration
+# ============================================
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+# ============================================
+# Database Configuration
+# ⚠️  CHANGE THESE VALUES!
+# ============================================
+db_name     = "appdb"
+db_username = "dbadmin"
+db_password = "CHANGE_ME_PLEASE_123!"  # Use a strong password!
+
+# Database instance size
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+
+# ============================================
+# Redis Configuration
+# ============================================
+redis_node_type       = "cache.t3.micro"
+redis_num_cache_nodes = 1
+
+# ============================================
+# ECS Configuration
+# ============================================
+# CPU and Memory (in MiB)
+api_cpu         = 256
+api_memory      = 512
+frontend_cpu    = 256
+frontend_memory = 512
+
+# Task Scaling
+desired_count = 1
+min_capacity  = 1
+max_capacity  = 3
+
+# ============================================
+# Docker Images (auto-populated by deploy script)
+# ============================================
+# api_image      = ""
+# frontend_image = ""
+
