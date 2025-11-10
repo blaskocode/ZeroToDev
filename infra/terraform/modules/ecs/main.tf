@@ -257,11 +257,6 @@ resource "aws_ecs_service" "api" {
     container_port   = 4000
   }
 
-  deployment_configuration {
-    maximum_percent         = 200
-    minimum_healthy_percent = 100
-  }
-
   tags = merge(
     var.common_tags,
     {
@@ -288,11 +283,6 @@ resource "aws_ecs_service" "frontend" {
     target_group_arn = var.alb_target_group_frontend_arn
     container_name   = "frontend"
     container_port   = 80
-  }
-
-  deployment_configuration {
-    maximum_percent         = 200
-    minimum_healthy_percent = 100
   }
 
   tags = merge(
