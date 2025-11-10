@@ -48,6 +48,28 @@ aws iam attach-user-policy \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/GitHubActionsZeroToDevPolicy
 ```
 
+**If the policy already exists**, update it with the latest version:
+
+```bash
+# Create a new policy version and set it as default (replace ACCOUNT_ID with your AWS account ID)
+aws iam create-policy-version \
+  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/GitHubActionsZeroToDevPolicy \
+  --policy-document file://docs/github-actions-iam-policy.json \
+  --set-as-default
+```
+
+**Note:** If you have multiple versions, you may want to delete old versions after verifying the new one works:
+```bash
+# List policy versions
+aws iam list-policy-versions \
+  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/GitHubActionsZeroToDevPolicy
+
+# Delete old version (replace VERSION_ID with the version to delete)
+aws iam delete-policy-version \
+  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/GitHubActionsZeroToDevPolicy \
+  --version-id VERSION_ID
+```
+
 Or via AWS Console:
 1. Go to IAM → Policies → Create policy
 2. Switch to JSON tab
@@ -56,6 +78,14 @@ Or via AWS Console:
 5. Create policy
 6. Go back to Users → `github-actions-zero-to-dev` → Add permissions
 7. Attach the policy you just created
+
+**To update an existing policy via Console:**
+1. Go to IAM → Policies
+2. Find and click on `GitHubActionsZeroToDevPolicy`
+3. Click "Edit" → "Edit policy"
+4. Switch to JSON tab
+5. Copy and paste the latest contents from `docs/github-actions-iam-policy.json`
+6. Click "Review policy" → "Save changes"
 
 ### 1.3 Create Access Keys
 
@@ -215,6 +245,30 @@ If a workflow fails, you can:
 1. Verify IAM policy includes ECR permissions
 2. Check ECR repository exists (created by Terraform bootstrap)
 3. Verify AWS region matches in workflow
+
+### Issue: RDS Permission Denied
+
+**Error:** `User is not authorized to perform: rds:DescribeDBParameters`
+
+**Solution:**
+1. Verify the IAM policy has been updated with the latest version from `docs/github-actions-iam-policy.json`
+2. Update the policy in AWS using one of these methods:
+   ```bash
+   # Using AWS CLI (replace ACCOUNT_ID with your AWS account ID)
+   aws iam create-policy-version \
+     --policy-arn arn:aws:iam::ACCOUNT_ID:policy/GitHubActionsZeroToDevPolicy \
+     --policy-document file://docs/github-actions-iam-policy.json \
+     --set-as-default
+   ```
+3. Or update via AWS Console:
+   - Go to IAM → Policies → `GitHubActionsZeroToDevPolicy`
+   - Click "Edit" → "Edit policy" → JSON tab
+   - Copy contents from `docs/github-actions-iam-policy.json`
+   - Save changes
+4. Wait a few seconds for the policy changes to propagate
+5. Re-run the Terraform plan/apply
+
+**Note:** The policy file already includes `rds:DescribeDBParameters` - the issue is that the policy in AWS needs to be updated to match the file.
 
 ### Issue: Terraform Apply Fails
 
