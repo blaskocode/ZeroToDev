@@ -151,6 +151,7 @@
         "rds:DescribeDBInstances",
         "rds:DescribeDBSubnetGroups",
         "rds:DescribeDBParameterGroups",
+        "rds:DescribeDBParameters",
         "rds:CreateDBInstance",
         "rds:DeleteDBInstance",
         "rds:ModifyDBInstance",
