@@ -78,11 +78,15 @@ jobs:
           TF_VAR_api_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-api:${{ github.sha }}
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
         run: |
-          terraform plan -no-color -out=tfplan 2>&1 | tee terraform-plan.log
+          terraform plan -no-color -out=tfplan -lock-timeout=5m 2>&1 | tee terraform-plan.log
           PLAN_EXIT=${PIPESTATUS[0]}
           if [ $PLAN_EXIT -ne 0 ]; then
             echo "::error::Terraform plan failed"
             cat terraform-plan.log
+            if grep -q "Error acquiring the state lock" terraform-plan.log; then
+              echo "::error::State lock detected. Run: terraform force-unlock <LOCK_ID> from your local machine"
+              echo "Or wait for the lock to expire (default: 10 minutes)"
+            fi
             exit $PLAN_EXIT
           fi
       
@@ -93,13 +97,16 @@ jobs:
           TF_VAR_api_image: ${{ steps.login-ecr.outputs.registry }}/zero-to-dev-dev-api:${{ github.sha }}
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
         run: |
-          terraform apply -auto-approve -no-color tfplan 2>&1 | tee terraform-apply.log
+          terraform apply -auto-approve -no-color tfplan -lock-timeout=5m 2>&1 | tee terraform-apply.log
           APPLY_EXIT=${PIPESTATUS[0]}
           if [ $APPLY_EXIT -ne 0 ]; then
             echo "::error::Terraform apply failed with exit code $APPLY_EXIT"
             echo "=== Full Error Output ==="
             cat terraform-apply.log
             echo "=== Checking for common issues ==="
+            if grep -q "Error acquiring the state lock" terraform-apply.log; then
+              echo "::error::State lock detected. Run: terraform force-unlock <LOCK_ID> from your local machine"
+            fi
             if grep -q "RepositoryAlreadyExistsException" terraform-apply.log; then
               echo "::error::ECR repository already exists - needs to be imported into Terraform state"
             fi
