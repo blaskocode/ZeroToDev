@@ -61,6 +61,28 @@ jobs:
         working-directory: ./infra/terraform
         run: terraform init
       
+      - name: Check and Release Stale Locks
+        working-directory: ./infra/terraform
+        run: |
+          echo "Checking for Terraform state locks..."
+          # Try a quick plan with short timeout to detect locks
+          PLAN_OUTPUT=$(terraform plan -lock-timeout=2s -refresh=false -out=/dev/null 2>&1 || true)
+          
+          if echo "$PLAN_OUTPUT" | grep -q "Error acquiring the state lock"; then
+            echo "⚠️  State lock detected. Extracting lock ID..."
+            LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -A 10 "Lock Info:" | grep "ID:" | awk '{print $2}' | head -1 | tr -d '[:space:]')
+            
+            if [ -n "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ] && [ ${#LOCK_ID} -gt 10 ]; then
+              echo "Releasing lock: $LOCK_ID"
+              terraform force-unlock -force "$LOCK_ID" && echo "✓ Lock released" || echo "⚠️  Could not release lock"
+            else
+              echo "⚠️  Could not extract valid lock ID"
+            fi
+          else
+            echo "✓ No locks detected"
+          fi
+        continue-on-error: true
+      
       - name: Verify Secrets
         run: |
           if [ -z "$DB_PASSWORD" ]; then
