@@ -23,7 +23,10 @@
         "ecr:PutLifecyclePolicy",
         "ecr:GetLifecyclePolicy",
         "ecr:PutImageTagMutability",
-        "ecr:PutImageScanningConfiguration"
+        "ecr:PutImageScanningConfiguration",
+        "ecr:ListTagsForResource",
+        "ecr:TagResource",
+        "ecr:UntagResource"
       ],
       "Resource": "*"
     },
@@ -173,6 +176,7 @@
         "elasticache:DescribeCacheClusters",
         "elasticache:DescribeCacheSubnetGroups",
         "elasticache:DescribeCacheParameterGroups",
+        "elasticache:DescribeCacheParameters",
         "elasticache:CreateCacheCluster",
         "elasticache:DeleteCacheCluster",
         "elasticache:ModifyCacheCluster",
