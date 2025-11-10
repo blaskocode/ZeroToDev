@@ -231,7 +231,9 @@
         "dynamodb:GetItem",
         "dynamodb:PutItem",
         "dynamodb:DeleteItem",
-        "dynamodb:DescribeTable"
+        "dynamodb:DescribeTable",
+        "dynamodb:Scan",
+        "dynamodb:Query"
       ],
       "Resource": "arn:aws:dynamodb:*:*:table/zero-to-dev-terraform-locks"
     }
