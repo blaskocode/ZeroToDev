@@ -27,6 +27,9 @@ Thumbs.db
 *.tfstate
 *.tfstate.*
 *.tfvars
+*.tfplan
+terraform-plan.log
+terraform-apply.log
 
 # Build outputs
 dist/

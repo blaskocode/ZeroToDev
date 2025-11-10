@@ -1,0 +1,5 @@
+# Ignore plan files
+*.tfplan
+terraform-plan.log
+terraform-apply.log
+
