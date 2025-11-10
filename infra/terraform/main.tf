@@ -61,40 +61,40 @@ module "elasticache" {
 module "alb" {
   source = "./modules/alb"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  vpc_id             = module.networking.vpc_id
-  public_subnet_ids  = module.networking.public_subnet_ids
+  project_name        = var.project_name
+  environment         = var.environment
+  vpc_id              = module.networking.vpc_id
+  public_subnet_ids   = module.networking.public_subnet_ids
   allowed_cidr_blocks = ["0.0.0.0/0"]
-  common_tags        = local.common_tags
+  common_tags         = local.common_tags
 }
 
 # ECS Cluster and Services Module
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name           = var.project_name
-  environment            = var.environment
-  vpc_id                 = module.networking.vpc_id
-  private_subnet_ids     = module.networking.private_subnet_ids
-  api_image              = var.api_image != "" ? var.api_image : "${module.ecr.api_repository_url}:latest"
-  frontend_image         = var.frontend_image != "" ? var.frontend_image : "${module.ecr.frontend_repository_url}:latest"
-  api_cpu                = var.api_cpu
-  api_memory             = var.api_memory
-  frontend_cpu           = var.frontend_cpu
-  frontend_memory        = var.frontend_memory
-  desired_count          = var.desired_count
-  min_capacity           = var.min_capacity
-  max_capacity           = var.max_capacity
+  project_name                  = var.project_name
+  environment                   = var.environment
+  vpc_id                        = module.networking.vpc_id
+  private_subnet_ids            = module.networking.private_subnet_ids
+  api_image                     = var.api_image != "" ? var.api_image : "${module.ecr.api_repository_url}:latest"
+  frontend_image                = var.frontend_image != "" ? var.frontend_image : "${module.ecr.frontend_repository_url}:latest"
+  api_cpu                       = var.api_cpu
+  api_memory                    = var.api_memory
+  frontend_cpu                  = var.frontend_cpu
+  frontend_memory               = var.frontend_memory
+  desired_count                 = var.desired_count
+  min_capacity                  = var.min_capacity
+  max_capacity                  = var.max_capacity
   alb_target_group_api_arn      = module.alb.api_target_group_arn
   alb_target_group_frontend_arn = module.alb.frontend_target_group_arn
-  db_host                = module.rds.endpoint
-  db_name                = var.db_name
-  db_username            = var.db_username
-  db_password            = var.db_password
-  redis_host             = module.elasticache.endpoint
-  redis_port             = module.elasticache.port
-  common_tags            = local.common_tags
+  db_host                       = module.rds.endpoint
+  db_name                       = var.db_name
+  db_username                   = var.db_username
+  db_password                   = var.db_password
+  redis_host                    = module.elasticache.endpoint
+  redis_port                    = module.elasticache.port
+  common_tags                   = local.common_tags
 
   depends_on = [
     module.rds,

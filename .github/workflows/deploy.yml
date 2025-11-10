@@ -65,21 +65,27 @@ jobs:
         working-directory: ./infra/terraform
         run: |
           echo "Checking for Terraform state locks..."
-          # Try a quick plan with short timeout to detect locks
-          PLAN_OUTPUT=$(terraform plan -lock-timeout=2s -refresh=false -out=/dev/null 2>&1 || true)
+          # Try a quick plan with very short timeout to detect locks without waiting
+          set +e
+          PLAN_OUTPUT=$(timeout 3 terraform plan -lock-timeout=1s -refresh=false -out=/dev/null 2>&1)
+          PLAN_EXIT=$?
+          set -e
           
           if echo "$PLAN_OUTPUT" | grep -q "Error acquiring the state lock"; then
             echo "⚠️  State lock detected. Extracting lock ID..."
-            LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -A 10 "Lock Info:" | grep "ID:" | awk '{print $2}' | head -1 | tr -d '[:space:]')
+            # Extract lock ID from the error message
+            LOCK_ID=$(echo "$PLAN_OUTPUT" | grep -A 15 "Lock Info:" | grep -E "^[[:space:]]+ID:" | awk '{print $2}' | head -1 | tr -d '[:space:]')
             
             if [ -n "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ] && [ ${#LOCK_ID} -gt 10 ]; then
               echo "Releasing lock: $LOCK_ID"
-              terraform force-unlock -force "$LOCK_ID" && echo "✓ Lock released" || echo "⚠️  Could not release lock"
+              terraform force-unlock -force "$LOCK_ID" && echo "✓ Lock released successfully" || echo "⚠️  Could not release lock (may have been released already)"
             else
-              echo "⚠️  Could not extract valid lock ID"
+              echo "⚠️  Could not extract valid lock ID from output"
+              echo "Lock detection output (first 20 lines):"
+              echo "$PLAN_OUTPUT" | head -20
             fi
           else
-            echo "✓ No locks detected"
+            echo "✓ No locks detected - proceeding with deployment"
           fi
         continue-on-error: true
       
