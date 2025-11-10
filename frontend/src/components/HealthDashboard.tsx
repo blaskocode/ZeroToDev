@@ -1,15 +1,38 @@
+/**
+ * HealthDashboard Component
+ * 
+ * Main dashboard that displays real-time health status of all services.
+ * Polls the API every 5 seconds for updates and displays service cards
+ * and system metrics.
+ * 
+ * @component
+ */
+
 import React, { useState, useEffect } from 'react';
 import { getComprehensiveHealth } from '../services/api';
 import type { ComprehensiveHealth } from '../types/health.types';
 import ServiceCard from './ServiceCard';
 import SystemMetrics from './SystemMetrics';
 
+/**
+ * HealthDashboard displays comprehensive health information for all services.
+ * Includes automatic polling every 5 seconds and error handling.
+ * 
+ * @returns {JSX.Element} The health dashboard component
+ */
 const HealthDashboard: React.FC = () => {
   const [health, setHealth] = useState<ComprehensiveHealth | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
+  /**
+   * Fetch health status from the API.
+   * Updates state with health data or error message.
+   * 
+   * @async
+   * @function fetchHealth
+   */
   const fetchHealth = async () => {
     try {
       const data = await getComprehensiveHealth();

@@ -1,3 +1,12 @@
+/**
+ * Zero-to-Dev API
+ * 
+ * Main entry point for the Express.js API server.
+ * Provides health check endpoints and connects to PostgreSQL and Redis.
+ * 
+ * @module api/index
+ */
+
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,7 +15,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { connectDatabase, disconnectDatabase } from './db/postgres';
 import { connectRedis, disconnectRedis } from './cache/redis';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
 const app: Express = express();
@@ -58,7 +67,15 @@ app.use((req: Request, res: Response) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Initialize and start server
+/**
+ * Initialize database connections and start the HTTP server.
+ * Handles graceful shutdown on SIGTERM and SIGINT signals.
+ * 
+ * @async
+ * @function startServer
+ * @returns {Promise<void>}
+ * @throws {Error} If server fails to start or connections fail
+ */
 const startServer = async () => {
   try {
     console.log('🚀 Starting Zero-to-Dev API...\n');
@@ -79,7 +96,14 @@ const startServer = async () => {
       console.log('\n✅ API is ready to handle requests!\n');
     });
     
-    // Graceful shutdown handler
+    /**
+     * Gracefully shut down the server and close all connections.
+     * Forces shutdown after 10 seconds if graceful shutdown fails.
+     * 
+     * @async
+     * @function gracefulShutdown
+     * @returns {Promise<void>}
+     */
     const gracefulShutdown = async () => {
       console.log('\n🛑 Graceful shutdown initiated...');
       
