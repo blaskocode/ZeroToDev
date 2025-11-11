@@ -60,6 +60,7 @@
       "Action": [
         "ec2:DescribeVpcs",
         "ec2:DescribeVpcAttribute",
+        "ec2:DescribeAddresses",
         "ec2:DescribeSubnets",
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeRouteTables",
@@ -112,6 +113,7 @@
         "elasticloadbalancing:DescribeTargetHealth",
         "elasticloadbalancing:DescribeTags",
         "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:DescribeListenerAttributes",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:CreateLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancer",
