@@ -10,7 +10,8 @@ echo "=== Current Quota ==="
 QUOTA=$(aws service-quotas get-service-quota --service-code ec2 --quota-code L-0263D0A3 --query 'Quota.Value' --output text 2>/dev/null)
 if [ -n "$QUOTA" ]; then
   echo "Quota limit: $QUOTA"
-  echo "Available: $((QUOTA - CURRENT_COUNT))"
+  QUOTA_INT=${QUOTA%.*}
+  echo "Available: $((QUOTA_INT - CURRENT_COUNT))"
 else
   echo "Could not fetch quota (default is usually 5)"
 fi
