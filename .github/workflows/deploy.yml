@@ -38,10 +38,10 @@ jobs:
           terraform init 2>/dev/null || true
           ALB_URL=$(terraform output -raw alb_url 2>/dev/null || echo "")
           if [ -n "$ALB_URL" ] && [ "$ALB_URL" != "" ]; then
-            echo "api_url=${ALB_URL}/api" >> $GITHUB_OUTPUT
+            echo "api_url=${ALB_URL}" >> $GITHUB_OUTPUT
             echo "Found existing ALB: ${ALB_URL}"
           else
-            echo "api_url=http://placeholder-alb-url/api" >> $GITHUB_OUTPUT
+            echo "api_url=http://placeholder-alb-url" >> $GITHUB_OUTPUT
             echo "ALB not found, using placeholder (will be updated after next deployment)"
           fi
         continue-on-error: true

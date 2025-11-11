@@ -81,10 +81,29 @@ docker push "${API_REPO}:latest"
 echo -e "${GREEN}✓ API image pushed${NC}"
 echo ""
 
+# Get ALB URL for frontend build (if ALB exists)
+cd "${PROJECT_ROOT}/infra/terraform"
+ALB_URL=""
+if [ -d ".terraform" ]; then
+    terraform init -backend=false >/dev/null 2>&1 || true
+    ALB_URL=$(terraform output -raw alb_url 2>/dev/null || echo "")
+fi
+
+# Use ALB URL if available, otherwise use placeholder (will be fixed on next deployment)
+if [ -z "$ALB_URL" ] || [ "$ALB_URL" = "" ]; then
+    ALB_URL="http://placeholder-alb-url"
+    echo -e "${YELLOW}⚠ ALB URL not found, using placeholder (will be updated after deployment)${NC}"
+else
+    echo -e "${BLUE}Using ALB URL: ${ALB_URL}${NC}"
+fi
+
 # Build and push frontend image (production target)
 echo -e "${YELLOW}Building Frontend Docker image...${NC}"
 cd "${PROJECT_ROOT}/frontend"
-docker build --target production -t "${FRONTEND_REPO}:${IMAGE_TAG}" -t "${FRONTEND_REPO}:latest" .
+docker build --target production \
+    --build-arg VITE_API_URL="${ALB_URL}" \
+    -t "${FRONTEND_REPO}:${IMAGE_TAG}" \
+    -t "${FRONTEND_REPO}:latest" .
 echo -e "${GREEN}✓ Frontend image built${NC}"
 
 echo -e "${YELLOW}Pushing Frontend image to ECR...${NC}"

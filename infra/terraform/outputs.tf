@@ -27,7 +27,7 @@ output "alb_url" {
 
 output "api_url" {
   description = "API endpoint URL"
-  value       = "http://${module.alb.dns_name}/api"
+  value       = "http://${module.alb.dns_name}"
 }
 
 # ECR Outputs
