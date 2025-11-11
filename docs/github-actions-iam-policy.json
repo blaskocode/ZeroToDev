@@ -110,6 +110,7 @@
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetGroupAttributes",
         "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:DescribeTags",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:CreateLoadBalancer",
