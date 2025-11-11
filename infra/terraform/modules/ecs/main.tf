@@ -164,7 +164,7 @@ resource "aws_ecs_task_definition" "api" {
         },
         {
           name  = "DATABASE_URL"
-          value = "postgresql://${var.db_username}:${var.db_password}@${var.db_host}/${var.db_name}?sslmode=prefer"
+          value = "postgresql://${var.db_username}:${var.db_password}@${var.db_host}/${var.db_name}?sslmode=no-verify"
         },
         {
           name  = "REDIS_URL"

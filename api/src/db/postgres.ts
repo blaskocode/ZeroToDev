@@ -10,12 +10,21 @@ export const connectDatabase = async (): Promise<void> => {
   try {
     console.log('📦 Connecting to PostgreSQL...');
     
+    // Parse connection string to check SSL mode
+    const connectionString = config.database.url;
+    const sslMode = connectionString.includes('sslmode=no-verify') 
+      ? { rejectUnauthorized: false }
+      : connectionString.includes('sslmode=require') || connectionString.includes('sslmode=prefer')
+      ? { rejectUnauthorized: false } // For RDS, we need to disable cert verification or use proper CA bundle
+      : undefined;
+
     pool = new Pool({
       connectionString: config.database.url,
       min: config.database.poolMin,
       max: config.database.poolMax,
       idleTimeoutMillis: config.database.idleTimeout,
       connectionTimeoutMillis: config.database.connectionTimeout,
+      ...(sslMode && { ssl: sslMode }),
     });
 
     // Test connection
