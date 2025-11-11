@@ -94,6 +94,7 @@ module "ecs" {
   db_password                   = var.db_password
   redis_host                    = module.elasticache.endpoint
   redis_port                    = module.elasticache.port
+  api_url                       = "http://${module.alb.dns_name}/api"
   common_tags                   = local.common_tags
 
   depends_on = [

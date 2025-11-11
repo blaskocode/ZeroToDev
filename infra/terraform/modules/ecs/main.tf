@@ -214,7 +214,7 @@ resource "aws_ecs_task_definition" "frontend" {
       environment = [
         {
           name  = "VITE_API_URL"
-          value = "http://localhost:4000"
+          value = var.api_url
         }
       ]
       logConfiguration = {

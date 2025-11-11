@@ -114,6 +114,11 @@ variable "redis_port" {
   type        = number
 }
 
+variable "api_url" {
+  description = "API URL for frontend to connect to"
+  type        = string
+}
+
 variable "common_tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)
