@@ -35,6 +35,9 @@
       "Effect": "Allow",
       "Action": [
         "ecs:DescribeClusters",
+        "ecs:CreateCluster",
+        "ecs:DeleteCluster",
+        "ecs:UpdateCluster",
         "ecs:DescribeServices",
         "ecs:DescribeTaskDefinition",
         "ecs:DescribeTasks",
@@ -50,7 +53,8 @@
         "ecs:RunTask",
         "ecs:StopTask",
         "ecs:TagResource",
-        "ecs:UntagResource"
+        "ecs:UntagResource",
+        "ecs:ListTagsForResource"
       ],
       "Resource": "*"
     },
@@ -208,6 +212,9 @@
         "logs:DescribeLogGroups",
         "logs:DescribeLogStreams",
         "logs:DeleteLogGroup",
+        "logs:ListTagsForResource",
+        "logs:TagResource",
+        "logs:UntagResource",
         "logs:DeleteLogStream",
         "logs:PutRetentionPolicy",
         "logs:TagLogGroup",
