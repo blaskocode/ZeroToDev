@@ -26,14 +26,31 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
+      - name: Get ALB URL (if exists)
+        id: get-alb-url
+        working-directory: ./infra/terraform
+        run: |
+          terraform init -backend=false 2>/dev/null || true
+          ALB_URL=$(terraform output -raw alb_url 2>/dev/null || echo "")
+          if [ -n "$ALB_URL" ]; then
+            echo "api_url=${ALB_URL}/api" >> $GITHUB_OUTPUT
+            echo "Found existing ALB: ${ALB_URL}"
+          else
+            echo "api_url=http://placeholder-alb-url/api" >> $GITHUB_OUTPUT
+            echo "ALB not found, using placeholder (will be updated after deployment)"
+          fi
+        continue-on-error: true
+      
       - name: Build and push frontend image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: zero-to-dev-dev-frontend
           IMAGE_TAG: ${{ github.sha }}
+          VITE_API_URL: ${{ steps.get-alb-url.outputs.api_url }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --target production \
+            --build-arg VITE_API_URL="$VITE_API_URL" \
             ./frontend
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             $ECR_REGISTRY/$ECR_REPOSITORY:latest
