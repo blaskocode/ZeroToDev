@@ -52,9 +52,13 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy config injection script and make it the entrypoint
+COPY inject-config.sh /inject-config.sh
+RUN chmod +x /inject-config.sh
+
 # Expose port
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Use inject-config.sh as entrypoint (it will start nginx)
+ENTRYPOINT ["/inject-config.sh"]
 

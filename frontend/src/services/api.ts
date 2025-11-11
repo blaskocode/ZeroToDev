@@ -1,7 +1,30 @@
 import axios from 'axios';
 import type { HealthStatus, ComprehensiveHealth, RootInfo } from '../types/health.types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// Runtime configuration: Use window.__API_URL__ if available (injected at runtime),
+// otherwise fall back to VITE_API_URL (build-time) or relative URL (production)
+const getApiUrl = (): string => {
+  // Runtime configuration (injected by nginx/config script)
+  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  
+  // Build-time configuration (for local development)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Production fallback: use relative URL since frontend and API are on same ALB
+  // This works because the ALB routes /health* to the API
+  if (import.meta.env.PROD) {
+    return ''; // Relative URL - same origin
+  }
+  
+  // Development fallback
+  return 'http://localhost:4000';
+};
+
+const API_URL = getApiUrl();
 
 const apiClient = axios.create({
   baseURL: API_URL,
