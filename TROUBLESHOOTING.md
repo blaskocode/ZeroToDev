@@ -650,6 +650,56 @@ ALB DNS returns 503 Service Unavailable
 
 3. **Wait 2-3 minutes** for ECS tasks to register with ALB
 
+### API Service Failing with SSL Certificate Errors
+
+**Symptoms:**
+- API tasks crash immediately after starting
+- CloudWatch logs show: `Error: self-signed certificate in certificate chain`
+- API service shows 0 running tasks (desired: 1)
+- ALB returns 503 for `/health` and `/health/all` endpoints
+
+**Root Cause:**
+RDS PostgreSQL uses SSL certificates that Node.js doesn't trust by default. The connection string uses `sslmode=require` which enforces SSL verification, causing the connection to fail.
+
+**Solutions:**
+
+1. **Verify the fix is deployed** (should already be in v1.0.0):
+   - Check `infra/terraform/modules/ecs/main.tf` - DATABASE_URL should use `sslmode=no-verify`
+   - Check `api/src/db/postgres.ts` - should configure SSL with `rejectUnauthorized: false`
+
+2. **If still seeing errors, verify task definition**:
+   ```bash
+   aws ecs describe-task-definition --task-definition zero-to-dev-dev-api \
+     --query 'taskDefinition.containerDefinitions[0].environment[?name==`DATABASE_URL`].value' \
+     --output text
+   ```
+   Should show: `...?sslmode=no-verify`
+
+3. **Check recent logs**:
+   ```bash
+   aws logs tail /ecs/zero-to-dev-dev-api --since 5m
+   ```
+   Look for: `✓ PostgreSQL connected` (success) or `self-signed certificate` (still failing)
+
+4. **Force new deployment** (if fix not applied):
+   ```bash
+   # Update Terraform to use sslmode=no-verify
+   cd infra/terraform
+   terraform apply
+   
+   # Or trigger GitHub Actions deployment
+   git commit --allow-empty -m "Force API redeployment"
+   git push origin main
+   ```
+
+**Prevention:**
+This issue was fixed in v1.0.0. The code now:
+- Uses `sslmode=no-verify` in the connection string
+- Configures the PostgreSQL Pool with `rejectUnauthorized: false` for RDS connections
+- Handles SSL mode detection automatically
+
+**Note:** For production environments, consider using proper RDS CA certificates instead of disabling verification.
+
 ### High AWS Costs
 
 **Solutions:**

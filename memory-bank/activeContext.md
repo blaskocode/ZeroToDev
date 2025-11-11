@@ -1,7 +1,7 @@
 # Active Context
 
-**Last Updated:** November 10, 2025  
-**Current Phase:** ✅ COMPLETE - All PRs Finished, Ready for v1.0.0 Release  
+**Last Updated:** November 11, 2025  
+**Current Phase:** ✅ COMPLETE - v1.0.0 Released, Post-Release Bug Fixes Applied  
 **Active PR:** PR #7 COMPLETE - Documentation & Final QA
 
 ---
@@ -11,10 +11,18 @@
 ### What We're Working On
 **PR #7: COMPLETE** ✅ - Documentation & Final QA fully implemented.
 
-**Current Status**: All 8 PRs complete! Project is feature-complete and ready for v1.0.0 release. Comprehensive documentation created, security review passed, release notes prepared. Ready for user to tag release and deploy.
+**Current Status**: All 8 PRs complete! v1.0.0 tagged and released. Post-release bug fixes applied for RDS SSL certificate issue and frontend API URL configuration. All services verified working in AWS deployment. Project is production-ready and fully functional.
 
 ### Recent Changes
-1. **PR #7 COMPLETED** ✅ - Documentation & Final QA complete:
+1. **v1.0.0 Post-Release Bug Fixes (November 11, 2025)** ✅:
+   - **Fixed RDS SSL Certificate Connection Issue**: API was crashing on startup with "self-signed certificate in certificate chain" error. Updated DATABASE_URL to use `sslmode=no-verify` and configured PostgreSQL Pool with `rejectUnauthorized: false`. API now successfully connects to RDS.
+   - **Fixed Frontend API URL Configuration**: Frontend was trying to connect to incorrect API URL. Updated to use relative URLs in production and added runtime configuration injection. Frontend now correctly connects to API via ALB.
+   - **Added Deployment Verification Tools**: Created `verify-deployment.sh` and `check-deployment.sh` scripts for troubleshooting AWS deployments.
+   - **Updated Documentation**: Added RDS SSL certificate troubleshooting section to TROUBLESHOOTING.md and documented bug fixes in CHANGELOG.md.
+   - **Verified End-to-End Deployment**: All services (API, Frontend, Database, Redis) verified healthy and working in AWS production environment.
+   - **Tagged v1.0.0 Release**: Created and pushed v1.0.0 tag to GitHub.
+
+2. **PR #7 COMPLETED** ✅ - Documentation & Final QA complete:
    - Updated main README.md with complete project status and feature highlights
    - Created QUICKSTART.md with 3-step setup guide
    - Created comprehensive TROUBLESHOOTING.md (900+ lines covering all scenarios)

@@ -169,6 +169,36 @@ The first production-ready release of Zero-to-Running Developer Environment! Thi
 - ✅ Auto-scaling configuration
 - ✅ Centralized logging
 
+### Fixed
+
+#### v1.0.0 Post-Release Bug Fixes (2025-11-11)
+
+- **Fixed RDS SSL Certificate Connection Issue**
+  - API service was crashing on startup with "self-signed certificate in certificate chain" error
+  - Updated DATABASE_URL connection string to use `sslmode=no-verify` instead of `sslmode=require`
+  - Modified PostgreSQL Pool configuration to disable certificate verification for RDS connections
+  - API now successfully connects to RDS PostgreSQL database
+  - Files changed:
+    - `infra/terraform/modules/ecs/main.tf` - Updated DATABASE_URL environment variable
+    - `api/src/db/postgres.ts` - Added SSL configuration with `rejectUnauthorized: false`
+
+- **Fixed Frontend API URL Configuration**
+  - Frontend was trying to connect to incorrect API URL (`/api/health/all` instead of `/health/all`)
+  - Updated API URL configuration to use relative URLs in production
+  - Added runtime configuration injection for API URL
+  - Frontend now correctly connects to API via ALB
+  - Files changed:
+    - `frontend/src/services/api.ts` - Added runtime URL detection and relative URL fallback
+    - `frontend/Dockerfile` - Added config injection script
+    - `frontend/inject-config.sh` - Runtime configuration injection
+    - `infra/terraform/main.tf` - Fixed api_url to remove `/api` suffix
+    - `.github/workflows/deploy.yml` - Updated ALB URL retrieval
+
+- **Added Deployment Verification Tools**
+  - Created `verify-deployment.sh` script to check deployment status
+  - Created `check-deployment.sh` script for quick health checks
+  - Improved troubleshooting capabilities for AWS deployments
+
 ### Known Issues
 
 None at release.
